@@ -1,18 +1,25 @@
 const Order = require("../models/orderModel");
-const User = require("../models/userModel")
+const Product = require("../models/productModel");
+const User = require("../models/userModel");
 const { ObjectId } = require("mongodb");
 const nodemailer = require("nodemailer");
 
 const placeOrder = async (req, res) => {
   try {
     const order = await Order.create(req.body);
-    //update quantity of products after placing order
-    // for (const item of order.products) {
-    //   await Products.updateOne(
-    //     { _id: item.product._id },
-    //     { $inc: { quantityAvailable: -item.quantity } }
-    //   );
-    // }
+    if (order) {
+      // update quantity of products after placing order
+      for (const item of order.products) {
+        await Product.updateOne(
+          { _id: item.product },
+          {
+            $inc: {
+              [`options.${item.option}.quantityAvailable`]: -item.quantity,
+            },
+          }
+        );
+      }
+    }
     res
       .status(200)
       .json({ message: "Your order has been placed", order: order });
@@ -258,10 +265,10 @@ const getUserOrderById = async (req, res) => {
 };
 
 const sendEmail = async (req, res) => {
-  const { customerId, subject,trackingId } = req.body;
-  const id = ObjectId.createFromHexString(customerId)
+  const { customerId, subject, trackingId } = req.body;
+  const id = ObjectId.createFromHexString(customerId);
   try {
-    const user = await User.findOne({_id: id})
+    const user = await User.findOne({ _id: id });
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -319,5 +326,5 @@ module.exports = {
   getUserOrders,
   changeOrderStatus,
   getUserOrderById,
-  sendEmail
+  sendEmail,
 };
