@@ -19,14 +19,13 @@ const path = require("path");
 const router = express.Router();
 const upload = multer();
 
-// CODE FOR MULTER STORAGE FOR STORING IMAGE FILES
-const storage = multer.diskStorage({
-  destination: async function (req, file, cb) {
+// CODE FOR MULTER STORAGE FOR STORING PRODUCT IMAGE FILES
+const productStorage = multer.diskStorage({
+  destination: async function (req,file, cb) {
     try {
       const category = await Category.findOne({ name: req.body.category });
       if (!category) {
         const { category } = req.body;
-        console.log("Creating new category");
         // return cb(new Error("Category not found"), null);
         const newCategory = await Category.create({
           name: category,
@@ -64,7 +63,7 @@ const storage = multer.diskStorage({
   },
 });
 
-const uploadImages = multer({ storage: storage });
+const uploadImages = multer({ storage: productStorage });
 
 router.get("/getProductsByCategory/:id", getProductsByCategory);
 router.get("/getProducts", getAllProducts);
