@@ -41,11 +41,11 @@ router.get("/getCategoryById", fetchCategoryById);
 router.post(
   "/addCategory",
   authenticateToken,
-  uploadCategoryImages.array("images", 1),
+  uploadCategoryImages.single("images"),
   addCategory
 );
 router.put("/updateCategory", authenticateToken, isAdmin, updateCategory);
 router.post("/deleteCategory/:id", authenticateToken, isAdmin, deleteCategory);
-router.get("/categoryImages/:category",authenticateToken, fetchCategoryImages);
+router.get("/categoryImages/:category", authenticateToken, fetchCategoryImages);
 
 module.exports = router;

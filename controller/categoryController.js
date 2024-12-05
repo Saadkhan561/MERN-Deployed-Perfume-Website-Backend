@@ -26,6 +26,16 @@ const updateCategory = async (req, res) => {
 const deleteCategory = async (req, res) => {
   try {
     await Category.deleteOne({ _id: req.params.id });
+    const backendPath = path.join(__dirname, "..");
+    const categoryImageDir = path.join(
+      backendPath,
+      "categoryImages",
+      req.body.category
+    );
+    if (fs.existsSync(categoryImageDir)) {
+      fs.rmSync(categoryImageDir, { recursive: true, force: true });
+      console.log("Category images removed");
+    }
     return res.json({ message: "Deleted" });
   } catch (err) {
     return res.json(err);
