@@ -15,6 +15,7 @@ const productRoutes = require('./routes/productRoutes')
 const userRoutes = require('./routes/userRoutes')
 const orderRoutes = require('./routes/orderRoutes')
 const categoryRoutes = require('./routes/categoryRoutes')
+const parentCategoryRoutes = require('./routes/parentCategoryRoutes')
 
 // MIDDLEWARE
 app.use(cors());
@@ -40,6 +41,9 @@ app.use('/', orderRoutes)
 
 // CATEGORY ROUTES
 app.use('/', categoryRoutes)
+
+// PARENT CATEGORY ROUTES
+app.use('/', parentCategoryRoutes)
 
 // DATABASE CONNECTION
 mongoose

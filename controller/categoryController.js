@@ -1,12 +1,14 @@
 const Category = require("../models/categoryModel");
+const { ObjectId } = require("mongodb");
 
 const path = require("path");
 const fs = require("fs");
 
 const addCategory = async (req, res) => {
-  const { category } = req.body;
+  const { category, parentId } = req.body;
+  const id = ObjectId.createFromHexString(parentId);
   try {
-    await Category.create({ name: category });
+    await Category.create({ name: category, parentCategory: id });
     return res.json({ message: "Category Created" });
   } catch (err) {
     return res.json(err);
@@ -30,6 +32,7 @@ const deleteCategory = async (req, res) => {
     const categoryImageDir = path.join(
       backendPath,
       "categoryImages",
+      req.body.parentCategory,
       req.body.category
     );
     if (fs.existsSync(categoryImageDir)) {
@@ -43,7 +46,26 @@ const deleteCategory = async (req, res) => {
 };
 
 const fetchAllCategories = async (req, res) => {
-  const categories = await Category.find({});
+  const categories = await Category.aggregate([
+    {
+      $lookup: {
+        from: "perfume_parent_categories",
+        localField: "parentCategory",
+        foreignField: "_id",
+        as: "parentCategoryDetails",
+      },
+    },
+    {
+      $unwind: "$parentCategoryDetails",
+    },
+    {
+      $project: {
+        _id: 1,
+        name: 1,
+        parentCategoryName: "$parentCategoryDetails.name"
+      }
+    }
+  ]);
   try {
     if (categories === null) {
       return res.status(404).json("No categories found!");

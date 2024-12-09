@@ -18,8 +18,13 @@ const fs = require("fs");
 const categoryStorage = multer.diskStorage({
   destination: function (req, file, cb) {
     try {
-      const { category } = req.body;
-      const uploadDir = path.join(__dirname, "../categoryImages", category);
+      const { category, parentCategory } = req.body;
+      const uploadDir = path.join(
+        __dirname,
+        "../categoryImages",
+        parentCategory,
+        category
+      );
       if (!fs.existsSync(uploadDir)) {
         fs.mkdirSync(uploadDir, { recursive: true });
       }
