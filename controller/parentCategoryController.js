@@ -9,16 +9,25 @@ const addParentCategory = async (req, res) => {
   }
 };
 
-const fetchParentCategories = async (req, res) => {
+const fetchAllParentCategories = async (req, res) => {
   try {
-    const parentCategories = await ParentCategory.find({});
+    const parentCategories = await ParentCategory.aggregate([
+      {
+        $lookup: {
+          from: "perfume_categories",
+          localField: "_id",
+          foreignField: "parentCategory",
+          as: "subCategories",
+        },
+      },
+    ]);
     return res.status(200).json(parentCategories);
-  } catch (error) {
-    return res.status(500).json(error);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };
 
 module.exports = {
   addParentCategory,
-  fetchParentCategories,
+  fetchAllParentCategories
 };

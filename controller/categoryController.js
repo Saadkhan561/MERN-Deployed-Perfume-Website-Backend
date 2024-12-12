@@ -1,4 +1,5 @@
 const Category = require("../models/categoryModel");
+const ParentCategory = require("../models/parentCategoryModel");
 const { ObjectId } = require("mongodb");
 
 const path = require("path");
@@ -62,9 +63,9 @@ const fetchAllCategories = async (req, res) => {
       $project: {
         _id: 1,
         name: 1,
-        parentCategoryName: "$parentCategoryDetails.name"
-      }
-    }
+        parentCategoryName: "$parentCategoryDetails.name",
+      },
+    },
   ]);
   try {
     if (categories === null) {
@@ -87,8 +88,13 @@ const fetchCategoryById = async (req, res) => {
 
 const fetchCategoryImages = async (req, res) => {
   const backendPath = path.join(__dirname, "..");
-  const { category } = req.params;
-  const categoryImageDir = path.join(backendPath, "categoryImages", category);
+  const { category, parentCategory } = req.params;
+  const categoryImageDir = path.join(
+    backendPath,
+    "categoryImages",
+    parentCategory,
+    category
+  );
   if (fs.existsSync(categoryImageDir)) {
     fs.readdir(categoryImageDir, (err, files) => {
       if (err) {

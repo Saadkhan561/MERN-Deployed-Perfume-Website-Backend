@@ -51,6 +51,6 @@ router.post(
 );
 router.put("/updateCategory", authenticateToken, isAdmin, updateCategory);
 router.post("/deleteCategory/:id", authenticateToken, isAdmin, deleteCategory);
-router.get("/categoryImages/:category", authenticateToken, fetchCategoryImages);
+router.get("/categoryImages/:parentCategory/:category", authenticateToken, fetchCategoryImages);
 
 module.exports = router;
