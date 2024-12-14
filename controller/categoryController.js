@@ -38,7 +38,6 @@ const deleteCategory = async (req, res) => {
     );
     if (fs.existsSync(categoryImageDir)) {
       fs.rmSync(categoryImageDir, { recursive: true, force: true });
-      console.log("Category images removed");
     }
     return res.json({ message: "Deleted" });
   } catch (err) {
