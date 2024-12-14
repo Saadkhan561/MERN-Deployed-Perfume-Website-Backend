@@ -22,9 +22,7 @@ const updateParentCategory = async (req, res) => {
     const destinationPath = path.join(categoryImageDir, name);
     if (fs.existsSync(sourcePath)) {
       fs.renameSync(sourcePath, destinationPath); 
-      console.log("Directory renamed successfully");
     } else {
-      console.log("Source directory does not exist");
       return res
         .status(404)
         .json({ message: "Source directory does not exist" });

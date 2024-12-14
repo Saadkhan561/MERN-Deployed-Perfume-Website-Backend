@@ -17,9 +17,24 @@ const addCategory = async (req, res) => {
 };
 
 const updateCategory = async (req, res) => {
-  const { id, name } = req.body;
+  const { id, name, parentCategory, category } = req.body;
   try {
     await Category.updateOne({ _id: id }, { name: name });
+    const backendPath = path.join(__dirname, "..");
+    const categoryImageDir = path.join(
+      backendPath,
+      "categoryImages",
+      parentCategory
+    );
+    const sourcePath = path.join(categoryImageDir, category);
+    const destinationPath = path.join(categoryImageDir, name);
+    if (fs.existsSync(sourcePath)) {
+      fs.renameSync(sourcePath, destinationPath);
+    } else {
+      return res
+        .status(404)
+        .json({ message: "Source directory does not exist" });
+    }
     return res.json({ message: "Updated" });
   } catch (err) {
     return res.json(err);
