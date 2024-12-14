@@ -1,7 +1,10 @@
 const ParentCategory = require("../models/parentCategoryModel");
+const Category = require("../models/categoryModel");
+const Product = require("../models/productModel");
 
 const path = require("path");
 const fs = require("fs");
+const req = require("express/lib/request");
 
 const addParentCategory = async (req, res) => {
   try {
@@ -21,13 +24,39 @@ const updateParentCategory = async (req, res) => {
     const sourcePath = path.join(categoryImageDir, parentCategory);
     const destinationPath = path.join(categoryImageDir, name);
     if (fs.existsSync(sourcePath)) {
-      fs.renameSync(sourcePath, destinationPath); 
+      fs.renameSync(sourcePath, destinationPath);
     } else {
       return res
         .status(404)
         .json({ message: "Source directory does not exist" });
     }
     return res.json({ message: "Updated" });
+  } catch (err) {
+    return res.json(err);
+  }
+};
+
+const deleteParentCategory = async (req, res) => {
+  try {
+    await ParentCategory.deleteOne({ _id: req.params.id });
+    await Category.deleteMany({ parentCategory: req.params.id });
+    const categoriesToDelete = await Category.find({
+      parentCategory: req.params.id,
+    }).select("_id");
+    console.log(categoriesToDelete);
+    const categoryIds = categoriesToDelete.map((category) => category._id);
+    console.log(categoryIds);
+    await Product.deleteMany({ category: { $in: categoryIds } });
+    const backendPath = path.join(__dirname, "..");
+    const categoryImageDir = path.join(
+      backendPath,
+      "categoryImages",
+      req.body.parentCategory
+    );
+    if (fs.existsSync(categoryImageDir)) {
+      fs.rmSync(categoryImageDir, { recursive: true, force: true });
+    }
+    return res.json({ message: "Deleted" });
   } catch (err) {
     return res.json(err);
   }
@@ -55,4 +84,5 @@ module.exports = {
   addParentCategory,
   fetchAllParentCategories,
   updateParentCategory,
+  deleteParentCategory,
 };

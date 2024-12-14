@@ -1,5 +1,5 @@
 const Category = require("../models/categoryModel");
-const ParentCategory = require("../models/parentCategoryModel");
+const Product = require("../models/productModel")
 const { ObjectId } = require("mongodb");
 
 const path = require("path");
@@ -44,6 +44,7 @@ const updateCategory = async (req, res) => {
 const deleteCategory = async (req, res) => {
   try {
     await Category.deleteOne({ _id: req.params.id });
+    await Product.deleteMany({category: req.params.id})
     const backendPath = path.join(__dirname, "..");
     const categoryImageDir = path.join(
       backendPath,
