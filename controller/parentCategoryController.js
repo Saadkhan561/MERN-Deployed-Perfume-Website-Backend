@@ -38,15 +38,13 @@ const updateParentCategory = async (req, res) => {
 
 const deleteParentCategory = async (req, res) => {
   try {
-    await ParentCategory.deleteOne({ _id: req.params.id });
-    await Category.deleteMany({ parentCategory: req.params.id });
     const categoriesToDelete = await Category.find({
       parentCategory: req.params.id,
-    }).select("_id");
-    console.log(categoriesToDelete);
+    });
     const categoryIds = categoriesToDelete.map((category) => category._id);
-    console.log(categoryIds);
     await Product.deleteMany({ category: { $in: categoryIds } });
+    await Category.deleteMany({ parentCategory: req.params.id });
+    await ParentCategory.deleteOne({ _id: req.params.id });
     const backendPath = path.join(__dirname, "..");
     const categoryImageDir = path.join(
       backendPath,
