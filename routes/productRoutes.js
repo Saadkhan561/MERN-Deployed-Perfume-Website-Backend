@@ -26,7 +26,6 @@ const productStorage = multer.diskStorage({
       const category = await Category.findOne({ name: req.body.category });
       if (!category) {
         const { category } = req.body;
-        // return cb(new Error("Category not found"), null);
         const newCategory = await Category.create({
           name: category,
         });
@@ -70,7 +69,7 @@ router.get("/getProducts", getAllProducts);
 // FOR FETCHING NON FILTERED PRODUCTS
 router.get("/getAllProducts", authenticateToken, getProducts);
 router.get("/trendingProducts", trendingProducts);
-router.get("/images/:category/:productName", getProductImages);
+router.get("/images/:parentCategory/:category/:productName", getProductImages);
 router.get("/getProductById/:id", getProductById);
 router.get("/search", searchResults);
 

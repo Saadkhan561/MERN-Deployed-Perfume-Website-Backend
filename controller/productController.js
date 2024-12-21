@@ -8,7 +8,7 @@ const fs = require("fs");
 
 //get pinned product first
 const getAllProducts = async (req, res) => {
-  let { categoryId, skip=0, limit = 10 } = req.query;
+  let { categoryId, skip = 0, limit = 10 } = req.query;
 
   try {
     skip = parseInt(skip, 10);
@@ -222,7 +222,23 @@ const trendingProducts = async (req, res) => {
         },
       },
       {
+        $lookup: {
+          from: "perfume_parent_categories",
+          localField: "categoryDetails.parentCategory",
+          foreignField: "_id",
+          as: "parentCategoryDetails",
+        },
+      },
+      {
         $unwind: "$categoryDetails",
+      },
+      {
+        $unwind: "$parentCategoryDetails",
+      },
+      {
+        $addFields: {
+          "categoryDetails.parentCategoryDetails": "$parentCategoryDetails",
+        },
       },
       {
         $project: {
@@ -230,6 +246,7 @@ const trendingProducts = async (req, res) => {
           order_count: 1,
           total_quantity_sold: 1,
           categoryDetails: 1,
+          parentCategoryDetails: 1,
           name: "$product_info.name",
           description: "$product_info.description",
           price: "$product_info.price",
@@ -336,10 +353,11 @@ const getProductsByCategory = async (req, res) => {
 
 const getProductImages = async (req, res) => {
   const backendPath = path.join(__dirname, "..");
-  const { category, productName } = req.params;
+  const { parentCategory, category, productName } = req.params;
   const productImageDir = path.join(
     backendPath,
     "images",
+    parentCategory,
     category,
     productName
   );

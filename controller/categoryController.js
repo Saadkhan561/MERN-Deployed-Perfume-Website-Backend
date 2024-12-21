@@ -1,9 +1,10 @@
 const Category = require("../models/categoryModel");
-const Product = require("../models/productModel")
+const Product = require("../models/productModel");
 const { ObjectId } = require("mongodb");
 
 const path = require("path");
 const fs = require("fs");
+const { error } = require("console");
 
 const addCategory = async (req, res) => {
   const { category, parentId } = req.body;
@@ -44,7 +45,7 @@ const updateCategory = async (req, res) => {
 const deleteCategory = async (req, res) => {
   try {
     await Category.deleteOne({ _id: req.params.id });
-    await Product.deleteMany({category: req.params.id})
+    await Product.deleteMany({ category: req.params.id });
     const backendPath = path.join(__dirname, "..");
     const categoryImageDir = path.join(
       backendPath,
@@ -94,8 +95,41 @@ const fetchAllCategories = async (req, res) => {
 
 const fetchCategoryById = async (req, res) => {
   try {
-    const category = await Category.findOne({ _id: req.query.categoryId });
+    const category = await Category.aggregate([
+      {
+        $lookup: {
+          from: "perfume_parent_categories",
+          localField: "parentCategory",
+          foreignField: "_id",
+          as: "parentCategoryDetails",
+        },
+      },
+      {
+        $match: {
+          _id: ObjectId.createFromHexString(req.query.categoryId),
+        },
+      },
+      {
+        $unwind: "$parentCategoryDetails",
+      },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          parentCategoryName: "$parentCategoryDetails.name",
+        },
+      },
+    ]);
     return res.status(200).json(category);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+const fetchCategoriesByParentId = async (req, res) => {
+  try {
+    const categories = await Category.find({ parentCategory: req.params.id });
+    return res.status(200).json(categories);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -155,4 +189,5 @@ module.exports = {
   deleteCategory,
   fetchCategoryById,
   fetchCategoryImages,
+  fetchCategoriesByParentId,
 };

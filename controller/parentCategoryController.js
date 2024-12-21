@@ -7,8 +7,18 @@ const fs = require("fs");
 const req = require("express/lib/request");
 
 const addParentCategory = async (req, res) => {
+  console.log("in service", req.body);
   try {
     await ParentCategory.create({ name: req.body.name });
+    const backendPath = path.join(__dirname, "..");
+    const categoryImageDir = path.join(
+      backendPath,
+      "categoryImages",
+      req.body.name
+    );
+    if (!fs.existsSync(categoryImageDir)) {
+      fs.mkdirSync(categoryImageDir, { recursive: true });
+    }
     return res.status(200).json({ message: "Parent category created" });
   } catch (error) {
     return res.status(500).json(error);

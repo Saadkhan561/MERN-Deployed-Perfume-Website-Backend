@@ -6,6 +6,7 @@ const {
   fetchAllCategories,
   fetchCategoryById,
   fetchCategoryImages,
+  fetchCategoriesByParentId,
 } = require("../controller/categoryController");
 const { authenticateToken, isAdmin } = require("../Middleware/auth");
 const router = express.Router();
@@ -43,6 +44,7 @@ const uploadCategoryImages = multer({ storage: categoryStorage });
 
 router.get("/getCategories", fetchAllCategories);
 router.get("/getCategoryById", fetchCategoryById);
+router.get("/getCategoriesByParentId/:id", fetchCategoriesByParentId);
 router.post(
   "/addCategory",
   authenticateToken,
@@ -51,6 +53,10 @@ router.post(
 );
 router.put("/updateCategory", authenticateToken, isAdmin, updateCategory);
 router.post("/deleteCategory/:id", authenticateToken, isAdmin, deleteCategory);
-router.get("/categoryImages/:parentCategory/:category", authenticateToken, fetchCategoryImages);
+router.get(
+  "/categoryImages/:parentCategory/:category",
+  authenticateToken,
+  fetchCategoryImages
+);
 
 module.exports = router;
