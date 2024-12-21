@@ -53,8 +53,17 @@ const deleteCategory = async (req, res) => {
       req.body.parentCategory,
       req.body.category
     );
+    const productImageDir = path.join(
+      backendPath,
+      "images",
+      req.body.parentCategory,
+      req.body.category
+    );
     if (fs.existsSync(categoryImageDir)) {
       fs.rmSync(categoryImageDir, { recursive: true, force: true });
+    }
+    if (fs.existsSync(productImageDir)) {
+      fs.rmSync(productImageDir, { recursive: true, force: true });
     }
     return res.json({ message: "Deleted" });
   } catch (err) {

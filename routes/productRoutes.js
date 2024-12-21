@@ -43,6 +43,7 @@ const productStorage = multer.diskStorage({
         const uploadDir = path.join(
           __dirname,
           "../images",
+          req.body.parentCategory,
           category.name,
           req.body.name
         );
