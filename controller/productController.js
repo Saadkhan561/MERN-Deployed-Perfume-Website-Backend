@@ -5,6 +5,7 @@ const Order = require("../models/orderModel");
 
 const path = require("path");
 const fs = require("fs");
+const e = require("express");
 
 //get pinned product first
 const getAllProducts = async (req, res) => {
@@ -41,7 +42,23 @@ const getAllProducts = async (req, res) => {
         },
       },
       {
+        $lookup: {
+          from: "perfume_parent_categories",
+          localField: "categoryDetails.parentCategory",
+          foreignField: "_id",
+          as: "parentCategoryDetails",
+        },
+      },
+      {
         $unwind: "$categoryDetails",
+      },
+      {
+        $unwind: "$parentCategoryDetails",
+      },
+      {
+        $addFields: {
+          "categoryDetails.parentCategoryDetails": "$parentCategoryDetails",
+        },
       },
       {
         $sort: {
@@ -98,9 +115,79 @@ const getAllProducts = async (req, res) => {
   }
 };
 
+// FOR FETCHING ALL PRODUCTS OF A PARENT CATEGORY
+const getProductByParentCategory = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const products = await Products.aggregate([
+      {
+        $lookup: {
+          from: "perfume_categories",
+          localField: "category",
+          foreignField: "_id",
+          as: "category",
+        },
+      },
+      { $unwind: "$category" },
+      {
+        $lookup: {
+          from: "perfume_parent_categories",
+          localField: "category.parentCategory",
+          foreignField: "_id",
+          as: "parent_category",
+        },
+      },
+      { $unwind: "$parent_category" },
+      // {
+      //   $addFields: {
+      //     "category.parentCategoryDetails": "$parent_category",
+      //   },
+      // },
+      {
+        $match: {
+          "parent_category._id": ObjectId.createFromHexString(id),
+          productStatus: true,
+        },
+      },
+      {
+        $group: {
+          _id: "$category.name",
+          parent_category_name: { $first: "$parent_category.name" },
+          products: {
+            $push: {
+              id: "$_id",
+              name: "$name",
+              price: "$price",
+              brand: "$brand",
+              description: "$description",
+              options: "$options",
+              category: "$category",
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          parent_category_name: 1,
+          subcategory_name: "$_id",
+          products: 1,
+        },
+      },
+    ]);
+    if (products.length === 0) {
+      res.status(200).json({ message: "No products" });
+    } else {
+      res.status(200).json(products);
+    }
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+};
+
 // FOR FETCHING NON FILTERED PRODUCTS
 const getProducts = async (req, res) => {
-  const { category, skip = 0, searchTerm, limit = 2 } = req.query;
+  const { category, skip = 0, searchTerm, limit = 10 } = req.query;
   const pipeline = [
     {
       $lookup: {
@@ -283,7 +370,21 @@ const getProductById = async (req, res) => {
         as: "categoryDetails",
       },
     },
+    {
+      $lookup: {
+        from: "perfume_parent_categories",
+        localField: "categoryDetails.parentCategory",
+        foreignField: "_id",
+        as: "parentCategoryDetails",
+      },
+    },
     { $unwind: "$categoryDetails" },
+    { $unwind: "$parentCategoryDetails" },
+    {
+      $addFields: {
+        "categoryDetails.parentCategoryDetails": "$parentCategoryDetails",
+      },
+    },
   ]);
   // const imageUrls = product.imagePaths.map(path => `/images/${path.split('/').pop()}`);
   // console.log(imageUrls);
@@ -592,6 +693,7 @@ const searchResults = async (req, res) => {
 module.exports = {
   getAllProducts,
   getProducts,
+  getProductByParentCategory,
   postProduct,
   getProductById,
   getProductsByCategory,

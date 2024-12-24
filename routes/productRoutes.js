@@ -13,6 +13,7 @@ const {
   getProductImages,
   getProducts,
   editProduct,
+  getProductByParentCategory,
 } = require("../controller/productController");
 const { authenticateToken, isAdmin } = require("../Middleware/auth");
 const path = require("path");
@@ -21,7 +22,7 @@ const upload = multer();
 
 // CODE FOR MULTER STORAGE FOR STORING PRODUCT IMAGE FILES
 const productStorage = multer.diskStorage({
-  destination: async function (req,file, cb) {
+  destination: async function (req, file, cb) {
     try {
       const category = await Category.findOne({ name: req.body.category });
       if (!category) {
@@ -67,6 +68,7 @@ const uploadImages = multer({ storage: productStorage });
 
 router.get("/getProductsByCategory/:id", getProductsByCategory);
 router.get("/getProducts", getAllProducts);
+router.get("/getProductsByParentCategory/:id", getProductByParentCategory);
 // FOR FETCHING NON FILTERED PRODUCTS
 router.get("/getAllProducts", authenticateToken, getProducts);
 router.get("/trendingProducts", trendingProducts);
