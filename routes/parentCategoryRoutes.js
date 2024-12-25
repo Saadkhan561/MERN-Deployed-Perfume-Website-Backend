@@ -4,7 +4,7 @@ const { addParentCategory, fetchAllParentCategories, updateParentCategory, delet
 const router = express.Router()
 
 router.post('/addParentCategory', authenticateToken, isAdmin, addParentCategory)
-router.get('/fetchAllParentCategories', authenticateToken, fetchAllParentCategories)
+router.get('/fetchAllParentCategories', fetchAllParentCategories)
 router.put('/updateParentCategory', authenticateToken, isAdmin, updateParentCategory)
 router.post('/deleteParentCategory/:id', authenticateToken, isAdmin, deleteParentCategory)
 

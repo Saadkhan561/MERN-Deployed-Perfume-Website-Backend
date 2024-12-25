@@ -138,11 +138,6 @@ const getProductByParentCategory = async (req, res) => {
         },
       },
       { $unwind: "$parent_category" },
-      // {
-      //   $addFields: {
-      //     "category.parentCategoryDetails": "$parent_category",
-      //   },
-      // },
       {
         $match: {
           "parent_category._id": ObjectId.createFromHexString(id),
@@ -173,7 +168,7 @@ const getProductByParentCategory = async (req, res) => {
           category_id: 1,
           parent_category_name: 1,
           subcategory_name: "$_id",
-          products: 1,
+          products: { $slice: ["$products", 4] },
         },
       },
       {
@@ -655,7 +650,7 @@ const searchResults = async (req, res) => {
           $or: regexWords.map((word) => ({
             $or: [
               { name: { $regex: word, $options: "i" } },
-              { description: { $regex: word, $options: "i" } },
+              // { description: { $regex: word, $options: "i" } },
               { brand: { $regex: word, $options: "i" } },
             ],
           })),
@@ -671,7 +666,23 @@ const searchResults = async (req, res) => {
         },
       },
       {
+        $lookup: {
+          from: "perfume_parent_categories",
+          localField: "categoryDetails.parentCategory",
+          foreignField: "_id",
+          as: "parentCategoryDetails",
+        },
+      },
+      {
         $unwind: "$categoryDetails",
+      },
+      {
+        $unwind: "$parentCategoryDetails",
+      },
+      {
+        $addFields: {
+          "categoryDetails.parentCategoryDetails": "$parentCategoryDetails",
+        },
       },
       {
         $project: {
@@ -683,7 +694,7 @@ const searchResults = async (req, res) => {
           imagePaths: 1,
           discount: 1,
           options: 1,
-          "categoryDetails.name": 1,
+          categoryDetails: 1,
         },
       },
     ]);

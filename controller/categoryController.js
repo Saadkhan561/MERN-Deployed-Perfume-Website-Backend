@@ -125,6 +125,7 @@ const fetchCategoryById = async (req, res) => {
         $project: {
           _id: 1,
           name: 1,
+          parentCategoryId: "$parentCategoryDetails._id",
           parentCategoryName: "$parentCategoryDetails.name",
         },
       },
