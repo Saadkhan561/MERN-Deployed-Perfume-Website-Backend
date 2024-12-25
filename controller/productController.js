@@ -152,10 +152,11 @@ const getProductByParentCategory = async (req, res) => {
       {
         $group: {
           _id: "$category.name",
+          category_id: { $first: "$category._id" },
           parent_category_name: { $first: "$parent_category.name" },
           products: {
             $push: {
-              id: "$_id",
+              _id: "$_id",
               name: "$name",
               price: "$price",
               brand: "$brand",
@@ -169,9 +170,15 @@ const getProductByParentCategory = async (req, res) => {
       {
         $project: {
           _id: 0,
+          category_id: 1,
           parent_category_name: 1,
           subcategory_name: "$_id",
           products: 1,
+        },
+      },
+      {
+        $sort: {
+          subcategory_name: 1,
         },
       },
     ]);

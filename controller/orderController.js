@@ -232,6 +232,17 @@ const getUserOrderById = async (req, res) => {
       $unwind: "$categoryDetails",
     },
     {
+      $lookup: {
+        from: "perfume_parent_categories",
+        localField: "categoryDetails.parentCategory",
+        foreignField: "_id",
+        as: "parentCategoryDetails",
+      },
+    },
+    {
+      $unwind: "$parentCategoryDetails",
+    },
+    {
       $group: {
         _id: "$_id",
         products: {
@@ -240,6 +251,7 @@ const getUserOrderById = async (req, res) => {
             name: "$productDetails.name",
             category: "$productDetails.category",
             category_name: "$categoryDetails.name",
+            parent_category_name: "$parentCategoryDetails.name",
             quantity: "$products.quantity",
             option: "$products.option",
             price: "$products.price",
