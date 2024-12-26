@@ -504,7 +504,7 @@ const getProductImages = async (req, res) => {
 };
 
 const postProduct = async (req, res) => {
-  const category = await Category.findOne({ name: req.body.category });
+  const category = await Category.findOne({ _id: ObjectId.createFromHexString(req.body.categoryId) });
   const options = JSON.parse(req.body.options);
   try {
     const { name, description, brand } = req.body;
